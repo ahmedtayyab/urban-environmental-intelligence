@@ -29,8 +29,8 @@ def main(use_synthetic: bool = False):
         df_raw = pd.read_parquet(raw_data_path)
     else:
         if use_synthetic:
-            print("Using synthetic data...")
-            df_raw = generate_synthetic_data(num_locations=100, num_days=365)
+            print("Generating hourly synthetic data (876K records for 100 stations × 365 days)...")
+            df_raw = generate_synthetic_data(num_locations=100, num_days=365, hourly=True)
         else:
             print("Fetching data from OpenAQ API...")
             df_raw = fetch_global_data(
@@ -40,14 +40,14 @@ def main(use_synthetic: bool = False):
             )
             
             if df_raw.empty:
-                print("API returned no data. Falling back to synthetic data...")
-                df_raw = generate_synthetic_data(num_locations=100, num_days=365)
+                print("API returned no data. Falling back to hourly synthetic data...")
+                df_raw = generate_synthetic_data(num_locations=100, num_days=365, hourly=True)
         
         if df_raw.empty:
             print("ERROR: No data available")
             return False
         
-        print(f"Fetched {len(df_raw)} records")
+        print(f"Generated {len(df_raw):,} records")
         print(f"Saving to {raw_data_path}...")
         df_raw.to_parquet(raw_data_path, index=False)
     

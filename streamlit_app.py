@@ -30,7 +30,11 @@ TEXT_SECONDARY = "#a0a8b8"
 # Load preprocessed data
 @st.cache_data
 def load_data():
-    data_path = Path("data/prepared_data.parquet")
+    # Try processed first, then fallback to root data folder
+    data_path = Path("data/processed/prepared_data.parquet")
+    if not data_path.exists():
+        data_path = Path("data/prepared_data.parquet")
+    
     if data_path.exists():
         df = pd.read_parquet(data_path)
         return df
