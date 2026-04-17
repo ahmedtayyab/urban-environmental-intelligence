@@ -461,7 +461,7 @@ elif page == "Task 1: PCA":
                     cols = [col1, col2]
                 
                 with cols[i % 2]:
-                    st.image(str(viz_file), use_column_width=True)
+                    st.image(str(viz_file), width=None)
                     st.caption(f"📊 {viz_file.stem.replace('_', ' ').title()}")
         else:
             st.warning("⚠️ Visualizations not found. Please run task1_run.py first.")
@@ -574,7 +574,7 @@ elif page == "Task 2: Temporal":
                     cols = [col1, col2]
                 
                 with cols[i % 2]:
-                    st.image(str(viz_file), use_column_width=True)
+                    st.image(str(viz_file), width=None)
                     st.caption(f"📊 {viz_file.stem.replace('_', ' ').title()}")
         else:
             st.warning("⚠️ Visualizations not found. Please run task2_run.py first.")
@@ -680,7 +680,7 @@ elif page == "Task 3: Distribution":
                     cols = [col1, col2]
                 
                 with cols[i % 2]:
-                    st.image(str(viz_file), use_column_width=True)
+                    st.image(str(viz_file), width=None)
                     st.caption(f"📊 {viz_file.stem.replace('_', ' ').title()}")
         else:
             st.warning("⚠️ Visualizations not found. Please run task3_run.py first.")
@@ -824,7 +824,7 @@ elif page == "Task 4: Visual Integrity":
                     cols = [col1, col2]
                 
                 with cols[i % 2]:
-                    st.image(str(viz_file), use_column_width=True)
+                    st.image(str(viz_file), width=None)
                     st.caption(f"📊 {viz_file.stem.replace('_', ' ').title()}")
         else:
             st.warning("⚠️ Visualizations not found. Please run task4_run.py first.")
