@@ -13,6 +13,35 @@ class DataProcessor:
     # Required environmental parameters for analysis
     CORE_PARAMETERS = ["PM2.5", "PM10", "NO2", "Ozone", "Temperature", "Humidity"]
     
+    # Mapping from different parameter name formats to standard names
+    PARAMETER_MAPPING = {
+        "pm25": "PM2.5",
+        "PM2.5": "PM2.5",
+        "PM 2.5": "PM2.5",
+        "pm10": "PM10",
+        "PM10": "PM10",
+        "PM 10": "PM10",
+        "no2": "NO2",
+        "NO2": "NO2",
+        "nitrogen dioxide": "NO2",
+        "o3": "Ozone",
+        "ozone": "Ozone",
+        "O3": "Ozone",
+        "temperature": "Temperature",
+        "temp": "Temperature",
+        "humidity": "Humidity",
+        "RH": "Humidity",
+    }
+    
+    @staticmethod
+    def standardize_parameter_names(df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize parameter names to standard format."""
+        df = df.copy()
+        df["parameter"] = df["parameter"].str.lower().map(
+            lambda x: DataProcessor.PARAMETER_MAPPING.get(x.lower(), x)
+        )
+        return df
+    
     @staticmethod
     def clean_data(df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -94,15 +123,16 @@ class DataProcessor:
         """
         Classify locations into Industrial vs Residential zones.
         
-        Simple heuristic: zones with lower humidity tend to be industrial.
-        (This would normally use actual zone data)
+        If zone column exists, use it. Otherwise, use heuristic based on humidity.
         """
         df = df.copy()
         
-        # Group by location and get median humidity
-        location_humidity = df.groupby("location_id")["Humidity"].median()
+        # If zone already exists (from synthetic data), keep it
+        if "zone" in df.columns:
+            return df
         
-        # Define threshold (50th percentile)
+        # Heuristic: zones with lower humidity tend to be industrial
+        location_humidity = df.groupby("location_id")["Humidity"].median()
         threshold = location_humidity.median()
         
         df["zone"] = df["location_id"].map(
@@ -122,18 +152,22 @@ class DataProcessor:
         return df
 
 
-def prepare_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict]:
+def prepare_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict, pd.DataFrame]:
     """
     Full preprocessing pipeline from raw API data.
     
     Returns:
-    - Processed DataFrame
+    - Processed DataFrame (with standardized features for PCA)
     - Metadata (scaling parameters, zone assignments)
+    - Raw features DataFrame (pre-standardization, for analysis)
     """
     processor = DataProcessor()
     
     print("Step 1: Cleaning data...")
     df = processor.clean_data(df)
+    
+    print("Step 1b: Standardizing parameter names...")
+    df = processor.standardize_parameter_names(df)
     
     print("Step 2: Pivoting to features...")
     df = processor.pivot_to_features(df)
@@ -143,6 +177,9 @@ def prepare_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict]:
     
     print("Step 4: Identifying health violations...")
     df = processor.identify_health_violations(df)
+    
+    # Keep a copy of raw features before standardization for analysis
+    df_raw_features = df.copy()
     
     print("Step 5: Standardizing features...")
     df_standardized, scaling_params = processor.standardize_features(
@@ -156,4 +193,4 @@ def prepare_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict]:
         "extreme_hazard_threshold": 200
     }
     
-    return df_standardized, metadata
+    return df_standardized, metadata, df_raw_features
