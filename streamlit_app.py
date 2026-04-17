@@ -27,7 +27,7 @@ CARD_BG = "#1a1f2e"
 TEXT_PRIMARY = "#ffffff"
 TEXT_SECONDARY = "#a0a8b8"
 
-# Load preprocessed data
+# Load preprocessed data from disk for visualization
 @st.cache_data
 def load_data():
     # Try processed first, then fallback to root data folder
@@ -40,15 +40,6 @@ def load_data():
         return df
     else:
         return None
-
-# Load the analysis modules
-import sys
-sys.path.insert(0, str(Path.cwd()))
-from src.data_processor import DataProcessor
-from src.task1_pca import PCAAnalyzer
-from src.task2_temporal import TemporalAnalyzer
-from src.task3_distribution import DistributionAnalyzer
-from src.task4_visualization import ThreeDAnalyzer
 
 # Advanced custom styling
 st.markdown("""

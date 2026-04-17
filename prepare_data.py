@@ -1,18 +1,13 @@
-"""Main pipeline: fetch and preprocess data."""
+"""Main pipeline: generate and preprocess synthetic air quality data."""
 import pandas as pd
-import os
-import sys
 from pathlib import Path
-from src.data_fetch import fetch_global_data, generate_synthetic_data
+from src.data_fetch import generate_synthetic_data
 from src.data_processor import prepare_dataset
 
 
-def main(use_synthetic: bool = False):
+def main():
     """
-    Main execution: fetch 100 global locations and preprocess data.
-    
-    Parameters:
-    - use_synthetic: Force use of synthetic data instead of API
+    Main execution: generate 100 synthetic locations and preprocess data.
     """
     project_root = Path(__file__).parent
     raw_data_path = project_root / "data" / "raw" / "openaq_2025.parquet"
@@ -28,23 +23,11 @@ def main(use_synthetic: bool = False):
         print(f"Loading cached raw data from {raw_data_path}...")
         df_raw = pd.read_parquet(raw_data_path)
     else:
-        if use_synthetic:
-            print("Generating hourly synthetic data (876K records for 100 stations × 365 days)...")
-            df_raw = generate_synthetic_data(num_locations=100, num_days=365, hourly=True)
-        else:
-            print("Fetching data from OpenAQ API...")
-            df_raw = fetch_global_data(
-                num_locations=100,
-                date_from="2025-01-01",
-                date_to="2025-12-31"
-            )
-            
-            if df_raw.empty:
-                print("API returned no data. Falling back to hourly synthetic data...")
-                df_raw = generate_synthetic_data(num_locations=100, num_days=365, hourly=True)
+        print("Generating hourly synthetic data (828K records for 100 stations × 365 days)...")
+        df_raw = generate_synthetic_data(num_locations=100, num_days=365, hourly=True)
         
         if df_raw.empty:
-            print("ERROR: No data available")
+            print("ERROR: Failed to generate data")
             return False
         
         print(f"Generated {len(df_raw):,} records")
